@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Тренажер таблицы умножения{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="10" cy="10" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="30" cy="40" r="3" fill="rgba(255,255,255,0.08)"/><circle cx="70" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="85" cy="70" r="3" fill="rgba(255,255,255,0.08)"/><circle cx="45" cy="85" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .navbar {
+            background: rgba(26, 26, 46, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+            border-bottom: 2px solid #f9a826;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #f9a826, #ff6b6b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent !important;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            transform: translateY(-2px);
+            color: #f9a826 !important;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: #f9a826;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 80%;
+        }
+
+        .card {
+            border: none;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 70px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .progress {
+            border-radius: 50px;
+            background-color: #e9ecef;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 50px;
+            transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .display-1 {
+            font-size: 5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 2px 2px 20px rgba(102,126,234,0.2);
+        }
+
+        input.form-control {
+            border-radius: 50px;
+            border: 2px solid #e9ecef;
+            padding: 14px 20px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input.form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+            outline: none;
+        }
+
+        .message-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            min-width: 350px;
+        }
+
+        .alert {
+            border-radius: 16px;
+            background: white !important;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .alert {
+            animation: slideIn 0.3s ease;
+        }
+
+        .encouragement-box {
+            background: linear-gradient(135deg, #f9a826, #ff6b6b);
+            border-radius: 20px;
+            padding: 20px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .encouragement-box::before {
+            content: '✨';
+            position: absolute;
+            font-size: 80px;
+            opacity: 0.1;
+            bottom: -20px;
+            right: -20px;
+        }
+
+        .encouragement-box::after {
+            content: '💪';
+            position: absolute;
+            font-size: 60px;
+            opacity: 0.1;
+            top: -20px;
+            left: -20px;
+        }
+
+        footer {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 25px 0;
+            margin-top: 50px;
+            border-top: 2px solid #f9a826;
+        }
+
+        .badge {
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+
+        .badge-info {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .badge-warning {
+            background: linear-gradient(135deg, #f9a826, #ff6b6b);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid #667eea;
+            background: transparent;
+            color: #667eea;
+            border-radius: 50px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: transparent;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline-secondary {
+            border: 2px solid #6c757d;
+            background: transparent;
+            color: #6c757d;
+            border-radius: 50px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            border-color: transparent;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        select.form-select {
+            border-radius: 50px;
+            border: 2px solid #e9ecef;
+            padding: 12px 20px;
+            transition: all 0.3s ease;
+        }
+
+        select.form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 1rem;
+            }
+            .nav-link {
+                font-size: 0.9rem;
+                padding: 0.5rem 0.8rem;
+            }
+            .stat-card {
+                padding: 10px;
+            }
+            .stat-number {
+                font-size: 1.5rem;
+            }
+            .btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+            .card-body {
+                padding: 1rem;
+            }
+            .encouragement-box {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'trainer' %}">
+                🧠 Таблица умножения
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'trainer' %}">🎯 Тренировка</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        {% if user.is_staff or user.is_superuser %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'admin_panel' %}">👑 Админ-панель</a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'profile' %}">👤 {{ user.username }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'end_session' %}">🏁 Завершить</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">🚪 Выход</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">🔑 Вход</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">📝 Регистрация</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container text-center">
+            <p class="mb-0">📅 2026 Тренажер таблицы умножения. Все права защищены</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        setTimeout(function() {
+            let alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    let bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 500);
+            });
+        }, 15000);
+    </script>
+</body>
+</html>

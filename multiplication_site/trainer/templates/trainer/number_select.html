@@ -1,0 +1,32 @@
+{% extends 'trainer/base.html' %}
+
+{% block title %}Тренировка на число{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center p-4">
+                    <h3 class="mb-4">🔢 Выберите число</h3>
+                    <form method="post" action="{% url 'number_training' %}">
+                        {% csrf_token %}
+                        <select name="number" class="form-select form-select-lg mb-4" required>
+                            <option value="">-- Выберите число --</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary w-100">🎯 Начать тренировку</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

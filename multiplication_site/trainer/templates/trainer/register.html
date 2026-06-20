@@ -1,0 +1,53 @@
+{% extends 'trainer/base.html' %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card" style="background: white;">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="mt-3">Регистрация</h2>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Имя пользователя</label>
+                            <input type="text" name="username" class="form-control" required autofocus>
+                            {% if form.username.errors %}
+                                <small class="text-danger">{{ form.username.errors.0 }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" required>
+                            {% if form.email.errors %}
+                                <small class="text-danger">{{ form.email.errors.0 }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Пароль</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Подтверждение пароля</label>
+                            <input type="password" name="confirm_password" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 btn-lg">Зарегистрироваться</button>
+                    </form>
+                    <hr class="my-4">
+                    <div class="text-center">
+                        <p class="mb-0">
+                            Уже есть аккаунт?
+                            <a href="{% url 'login' %}">Войдите</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

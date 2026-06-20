@@ -1,0 +1,5 @@
+deactivate
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install Django==3.2
+python manage.py runserver

@@ -1,0 +1,157 @@
+{% extends 'trainer/base.html' %}
+
+{% block title %}Админ-панель{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header" style="background: linear-gradient(135deg, #1a1a2e, #16213e); color: white;">
+            <h2 class="mb-0">👑 Админ-панель</h2>
+        </div>
+        <div class="card-body">
+            <!-- Статистика -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card text-center">
+                        <span style="font-size: 2rem;">👥</span>
+                        <h5 class="mt-2">Всего пользователей</h5>
+                        <h2 class="text-primary">{{ total_users }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card text-center">
+                        <span style="font-size: 2rem;">📊</span>
+                        <h5 class="mt-2">Всего сессий</h5>
+                        <h2 class="text-primary">{{ total_sessions }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card text-center">
+                        <span style="font-size: 2rem;">📝</span>
+                        <h5 class="mt-2">Решено примеров</h5>
+                        <h2 class="text-primary">{{ total_questions_solved }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card text-center">
+                        <span style="font-size: 2rem;">✅</span>
+                        <h5 class="mt-2">Средний процент</h5>
+                        <h2 class="text-success">{{ average_percent }}%</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Запросы на сброс пароля -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0">📧 Запросы на сброс пароля ({{ pending_requests }})</h4>
+                </div>
+                <div class="card-body">
+                    {% if reset_requests %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Пользователь</th>
+                                        <th>Email</th>
+                                        <th>Дата запроса</th>
+                                        <th>Действие</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for req in reset_requests %}
+                                    <tr>
+                                        <td>{{ req.user.username }}</td>
+                                        <td>{{ req.email }}</td>
+                                        <td>{{ req.created_at|date:"d.m.Y H:i" }}</td>
+                                        <td><a href="{% url 'password_reset_confirm_admin' req.id %}" class="btn btn-sm btn-success">Сбросить пароль</a></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success mb-0">Нет активных запросов на сброс пароля ✅</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Задания дня статистика -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>🌟 Задания дня</h5>
+                            <div class="row">
+                                <div class="col-6">
+                                    <p class="mb-0">Всего заданий:</p>
+                                    <h3>{{ total_challenges }}</h3>
+                                </div>
+                                <div class="col-6">
+                                    <p class="mb-0">Всего решений:</p>
+                                    <h3>{{ total_solved }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>🔗 Быстрые ссылки</h5>
+                            <a href="/admin/trainer/passwordresetrequest/" class="btn btn-outline-primary w-100 mb-2">📋 Управление запросами</a>
+                            <a href="/admin/" class="btn btn-outline-secondary w-100">⚙️ Полная админ-панель</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Последние пользователи -->
+            <h4 class="mt-4">📋 Последние пользователи</h4>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead><tr><th>ID</th><th>Имя</th><th>Email</th><th>Дата регистрации</th><th>Статус</th></tr></thead>
+                    <tbody>
+                        {% for user in recent_users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email|default:"не указан" }}</td>
+                            <td>{{ user.date_joined|date:"d.m.Y H:i" }}</td>
+                            <td>{% if user.is_staff %}<span class="badge bg-warning">Админ</span>{% else %}<span class="badge bg-success">Пользователь</span>{% endif %}</td>
+                        </tr>
+                        {% empty %}
+                            <tr><td colspan="5" class="text-center">Нет пользователей</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Последние сессии -->
+            <h4 class="mt-4">📊 Последние тренировки</h4>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead><tr><th>Пользователь</th><th>Дата</th><th>Вопросов</th><th>Правильно</th><th>Результат</th></tr></thead>
+                    <tbody>
+                        {% for session in recent_sessions %}
+                        <tr>
+                            <td>{{ session.user.username }}</td>
+                            <td>{{ session.start_time|date:"d.m.Y H:i" }}</td>
+                            <td>{{ session.total_questions }}</td>
+                            <td>{{ session.correct_answers }}</td>
+                            <td><div class="progress" style="height: 20px;"><div class="progress-bar bg-success" style="width: {{ session.success_rate }}%">{{ session.success_rate }}%</div></div></td>
+                        </tr>
+                        {% empty %}
+                            <tr><td colspan="5" class="text-center">Нет сессий</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .stat-card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: transform 0.3s; }
+    .stat-card:hover { transform: translateY(-3px); }
+</style>
+{% endblock %}

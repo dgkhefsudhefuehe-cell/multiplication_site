@@ -1,0 +1,33 @@
+{% extends 'trainer/base.html' %}
+
+{% block title %}Задание дня{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center p-4">
+                    <h3 class="mb-3">Задание дня</h3>
+                    <p class="text-muted">{{ challenge.date|date:"d.m.Y" }}</p>
+
+                    {% if is_solved %}
+                        <div class="alert alert-success">Вы уже решили задание дня!</div>
+                    {% endif %}
+
+                    <div class="display-1 my-4">
+                        {{ challenge.a }} × {{ challenge.b }}
+                    </div>
+
+                    <form method="post" action="{% url 'solve_daily_challenge' %}">
+                        {% csrf_token %}
+                        <input type="number" name="answer" class="form-control form-control-lg mb-3 text-center"
+                               placeholder="Ваш ответ" required>
+                        <button type="submit" class="btn btn-primary w-100">Проверить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

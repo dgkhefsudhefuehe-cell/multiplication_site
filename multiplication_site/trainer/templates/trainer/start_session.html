@@ -1,0 +1,283 @@
+{% extends 'trainer/base.html' %}
+
+{% block title %}Начать тренировку{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-4">
+                <h1 class="display-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                    🎯 Выбери свой путь к знаниям!
+                </h1>
+                <p class="text-white" style="font-size: 1.2rem;">Каждый режим поможет тебе освоить таблицу умножения</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <span style="font-size: 3rem;">🎲</span>
+                            </div>
+                            <h3 class="mb-2">Обычная тренировка</h3>
+                            <p class="text-muted mb-3">Случайные примеры от 2×2 до 9×9</p>
+                            <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="collapse" data-bs-target="#normalSettings">
+                                ⚙️ Настроить и начать
+                            </button>
+
+                            <div class="collapse mt-3" id="normalSettings">
+                                <form method="post" action="{% url 'start_session' %}" id="settingsForm">
+                                    {% csrf_token %}
+                                    <div class="mb-3 text-start">
+                                        <label class="form-label">📊 Количество вопросов</label>
+                                        <select name="question_count" class="form-select" id="questionSelect">
+                                            <option value="5">5 вопросов</option>
+                                            <option value="10" selected>10 вопросов</option>
+                                            <option value="20">20 вопросов</option>
+                                            <option value="30">30 вопросов</option>
+                                            <option value="50">50 вопросов</option>
+                                            <option value="100">100 вопросов</option>
+                                            <option value="custom">Своё количество</option>
+                                        </select>
+                                        <div id="customQuestionInput" style="display: none; margin-top: 5px;">
+                                            <input type="number" name="custom_questions" id="customQuestions" class="form-control" placeholder="Введите количество" min="1" value="10">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 text-start">
+                                        <label class="form-label">⏱️ Общее время на тренировку</label>
+                                        <select name="total_time" class="form-select" id="timeSelect">
+                                            <option value="30">30 секунд</option>
+                                            <option value="60">1 минута</option>
+                                            <option value="90">1 минута 30 секунд</option>
+                                            <option value="120">2 минуты</option>
+                                            <option value="180">3 минуты</option>
+                                            <option value="300" selected>5 минут</option>
+                                            <option value="600">10 минут</option>
+                                            <option value="900">15 минут</option>
+                                            <option value="1200">20 минут</option>
+                                            <option value="1800">30 минут</option>
+                                            <option value="custom">Своё время</option>
+                                        </select>
+                                        <div id="customTimeInput" style="display: none; margin-top: 5px;">
+                                            <input type="text" name="custom_time" id="customTime" class="form-control" placeholder="Введите время" value="5">
+                                        </div>
+                                        <small class="text-muted" id="timeWarning" style="color: red; display: none;"></small>
+                                    </div>
+                                    <input type="hidden" name="mode" value="normal">
+                                    <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+                                        🚀 Начать тренировку
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card h-100" style="background: linear-gradient(135deg, #f9a826, #ff6b6b); border: none;">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <span style="font-size: 3rem;">🌟</span>
+                            </div>
+                            <h3 class="mb-2" style="color: white;">Задание дня</h3>
+                            <p style="color: rgba(255,255,255,0.9); margin-bottom: 15px;">
+                                {% if user.profile.can_do_daily_challenge %}
+                                    Особое задание на сегодня
+                                {% else %}
+                                    ✅ Выполнено сегодня!
+                                {% endif %}
+                            </p>
+                            {% if user.profile.can_do_daily_challenge %}
+                                <form method="post" action="{% url 'start_daily_challenge_session' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-light w-100" style="border-radius: 50px; font-weight: 600;">
+                                        ⭐ Начать задание дня
+                                    </button>
+                                </form>
+                            {% else %}
+                                <button class="btn btn-light w-100" style="border-radius: 50px; font-weight: 600; opacity: 0.7;" disabled>
+                                    ✅ Уже выполнено
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 mt-4">
+                    <div class="card">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <span style="font-size: 3rem;">🔢</span>
+                            </div>
+                            <h3 class="mb-2">Тренировка на число</h3>
+                            <p class="text-muted mb-3">Тренируй умножение на конкретное число</p>
+                            <div class="row justify-content-center">
+                                <div class="col-md-6">
+                                    <form method="post" action="{% url 'number_training' %}">
+                                        {% csrf_token %}
+                                        <select name="number" class="form-select mb-3" required>
+                                            <option value="" disabled selected>-- Выберите число --</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                            <option value="7">7</option>
+                                            <option value="8">8</option>
+                                            <option value="9">9</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-outline-secondary w-100">
+                                            🎯 Начать тренировку
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function parseCustomTime(value) {
+        value = value.trim().replace(',', '.');
+        if (!value) return null;
+        if (/^\d+$/.test(value)) {
+            return parseInt(value);
+        }
+        if (/^\d+\.\d+$/.test(value)) {
+            const parts = value.split('.');
+            const minutes = parseInt(parts[0]);
+            const seconds = parseFloat('0.' + parts[1]) * 100;
+            const totalSeconds = Math.round(minutes * 60 + seconds);
+            return Math.max(1, totalSeconds);
+        }
+        return null;
+    }
+
+    function getQuestionCount() {
+        const select = document.getElementById('questionSelect');
+        if (select.value === 'custom') {
+            const input = document.getElementById('customQuestions');
+            return parseInt(input.value) || 10;
+        }
+        return parseInt(select.value);
+    }
+
+    function getTotalTime() {
+        const select = document.getElementById('timeSelect');
+        if (select.value === 'custom') {
+            const input = document.getElementById('customTime');
+            const parsed = parseCustomTime(input.value);
+            if (parsed !== null) {
+                return parsed;
+            }
+            return 300;
+        }
+        return parseInt(select.value);
+    }
+
+    function formatTime(seconds) {
+        if (seconds >= 60) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            if (secs === 0) return mins + ' мин';
+            return mins + ' мин ' + secs + ' сек';
+        }
+        return seconds + ' сек';
+    }
+
+    function getMinTotalTime(questionCount) {
+        if (questionCount >= 100) return 600;
+        if (questionCount >= 50) return 300;
+        if (questionCount >= 30) return 180;
+        if (questionCount >= 20) return 120;
+        if (questionCount >= 10) return 60;
+        return 30;
+    }
+
+    function updateTimeInfo() {
+        const count = getQuestionCount();
+        const totalTime = getTotalTime();
+
+        if (!totalTime || totalTime <= 0) {
+            const warningEl = document.getElementById('timeWarning');
+            warningEl.style.display = 'block';
+            warningEl.style.color = 'red';
+            warningEl.textContent = '⚠️ Введите корректное время';
+            return;
+        }
+
+        const minTotal = getMinTotalTime(count);
+        const warningEl = document.getElementById('timeWarning');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (totalTime < minTotal) {
+            warningEl.style.display = 'block';
+            warningEl.style.color = 'red';
+            warningEl.textContent = `⚠️ Для ${count} вопросов нужно минимум ${formatTime(minTotal)}. Вы выбрали ${formatTime(totalTime)}.`;
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+        } else {
+            warningEl.style.display = 'none';
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+        }
+    }
+
+    document.getElementById('questionSelect').addEventListener('change', function() {
+        const customDiv = document.getElementById('customQuestionInput');
+        if (this.value === 'custom') {
+            customDiv.style.display = 'block';
+        } else {
+            customDiv.style.display = 'none';
+        }
+        updateTimeInfo();
+    });
+
+    document.getElementById('timeSelect').addEventListener('change', function() {
+        const customDiv = document.getElementById('customTimeInput');
+        if (this.value === 'custom') {
+            customDiv.style.display = 'block';
+        } else {
+            customDiv.style.display = 'none';
+        }
+        updateTimeInfo();
+    });
+
+    document.getElementById('customQuestions').addEventListener('input', function() {
+        updateTimeInfo();
+    });
+
+    document.getElementById('customTime').addEventListener('input', function() {
+        updateTimeInfo();
+    });
+
+    document.getElementById('settingsForm').addEventListener('submit', function(e) {
+        if (document.getElementById('timeSelect').value === 'custom') {
+            const input = document.getElementById('customTime');
+            const parsed = parseCustomTime(input.value);
+            if (parsed === null) {
+                e.preventDefault();
+                alert('Пожалуйста, введите корректное время');
+                return false;
+            }
+        }
+
+        const count = getQuestionCount();
+        const totalTime = getTotalTime();
+        const minTotal = getMinTotalTime(count);
+
+        if (totalTime < minTotal) {
+            e.preventDefault();
+            alert(`Для ${count} вопросов нужно минимум ${formatTime(minTotal)}. Пожалуйста, выберите больше времени!`);
+            return false;
+        }
+    });
+
+    updateTimeInfo();
+</script>
+{% endblock %}

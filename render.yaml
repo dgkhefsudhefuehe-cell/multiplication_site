@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: multiplication-trainer
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+      python manage.py migrate
+    startCommand: gunicorn multiplication_site.wsgi
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: multiplication_db
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: PYTHON_VERSION
+        value: 3.12.0
+
+databases:
+  - name: multiplication_db
+    databaseName: multiplication_db
+    user: multiplication_user

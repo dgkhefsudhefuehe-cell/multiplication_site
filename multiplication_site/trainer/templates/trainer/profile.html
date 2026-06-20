@@ -1,0 +1,155 @@
+{% extends 'trainer/base.html' %}
+
+{% block title %}Профиль - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Профиль пользователя -->
+    <div class="card mb-4">
+        <div class="card-body p-5">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <span style="font-size: 4rem;">👤</span>
+                    <h3>{{ user.username }}</h3>
+                    <p class="text-muted"><small>Зарегистрирован: {{ user.date_joined|date:"d.m.Y" }}</small></p>
+                    <p class="text-muted"><small>Email: {{ user.email|default:"не указан" }}</small></p>
+                </div>
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="stat-card text-center">
+                                <h5>Всего сессий</h5>
+                                <div class="stat-number">{{ total_sessions }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card text-center">
+                                <h5>Решено примеров</h5>
+                                <div class="stat-number">{{ profile.total_questions }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card text-center">
+                                <h5>Правильных ответов</h5>
+                                <div class="stat-number">{{ profile.correct_answers }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h5>Общая успеваемость</h5>
+                        <div class="progress mt-2" style="height: 35px;">
+                            <div class="progress-bar bg-success" style="width: {{ profile.success_rate }}%">
+                                {{ profile.success_rate }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Смена пароля -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning">
+            <h4 class="mb-0">🔐 Смена пароля</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'change_password' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Старый пароль</label>
+                    <input type="password" name="old_password" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Новый пароль</label>
+                    <input type="password" name="new_password1" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Подтверждение пароля</label>
+                    <input type="password" name="new_password2" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-warning w-100">Изменить пароль</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Статистика по дням -->
+    {% if daily_stats %}
+    <div class="card mb-4">
+        <div class="card-header"><h4 class="mb-0">Статистика по дням</h4></div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead><tr><th>Дата</th><th>Решено</th><th>Правильно</th><th>Успеваемость</th></tr></thead>
+                    <tbody>
+                        {% for stat in daily_stats %}
+                        <tr>
+                            <td>{{ stat.date|date:"d.m.Y" }}</td>
+                            <td>{{ stat.total_questions }}</td>
+                            <td>{{ stat.correct_answers }}</td>
+                            <td><div class="progress" style="height: 25px;"><div class="progress-bar bg-success" style="width: {% widthratio stat.correct_answers stat.total_questions 100 %}%">{% widthratio stat.correct_answers stat.total_questions 100 %}%</div></div></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- История тренировок -->
+    <div class="card mb-4">
+        <div class="card-header"><h4 class="mb-0">История тренировок</h4></div>
+        <div class="card-body">
+            {% if last_sessions %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead><tr><th>Дата</th><th>Длительность</th><th>Решено</th><th>Правильно</th><th>Результат</th></tr></thead>
+                        <tbody>
+                            {% for session in last_sessions %}
+                            <tr>
+                                <td>{{ session.start_time|date:"d.m.Y H:i" }}</td>
+                                <td>{% if session.end_time %}{{ session.start_time|timesince:session.end_time }}{% else %}<span class="badge bg-warning">Активна</span>{% endif %}</td>
+                                <td>{{ session.total_questions }}</td>
+                                <td>{{ session.correct_answers }}</td>
+                                <td><div class="progress" style="height: 25px;"><div class="progress-bar bg-success" style="width: {{ session.success_rate }}%">{{ session.success_rate }}%</div></div></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center p-5"><p>Нет завершенных тренировок</p><a href="{% url 'trainer' %}" class="btn btn-primary">Начать тренировку</a></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Тренировки на числа -->
+    {% if number_trainings %}
+    <div class="card mb-4">
+        <div class="card-header"><h4 class="mb-0">🔢 Тренировки на числа</h4></div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead><tr><th>Число</th><th>Решено</th><th>Правильно</th><th>Успеваемость</th></tr></thead>
+                    <tbody>
+                        {% for training in number_trainings %}
+                        <tr>
+                            <td>{{ training.number }}</td>
+                            <td>{{ training.total_questions }}</td>
+                            <td>{{ training.correct_answers }}</td>
+                            <td><div class="progress" style="height: 25px;"><div class="progress-bar bg-success" style="width: {{ training.success_rate }}%">{{ training.success_rate }}%</div></div></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+<style>
+    .stat-card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .stat-number { font-size: 2rem; font-weight: 700; color: #667eea; }
+</style>
+{% endblock %}
